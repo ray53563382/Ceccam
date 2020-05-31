@@ -7,8 +7,25 @@
                     <h4 class="card-title">Registro de publicaciones</h4>
                     <p class="card-category">Si no encuentra su información recargue la página web</p>
                     <div class="col-12 my-3">
-                        <p> <div style="height: 1em; width: 1em; background: rgba(188, 211, 58, 0.794)" ></div> Más importante (Carousel). </p>
-                        <p> <div style="height: 1em; width: 1em; background: rgba(58, 155, 211, 0.794)" ></div> Importante. </p>
+                        <div class="container-fluid bg-grey">
+                            <div class="row">
+                                <div class="col-12">
+                                    <p class="h4 font-weight-bold">
+                                        Publicaciones importantes.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 ">
+                                    <Carousel @returnTotalCarousel="setTotalCarousel"  />
+                                </div>
+                                <div class="col-6  d-flex flex-row">
+                                    <Relevantes  @returnTotalRelevantes="setTotalRelevantes" />                                    
+                                </div>
+                            </div>
+                        </div>
+                        <!-- <p> <div style="height: 1em; width: 1em; background: rgba(188, 211, 58, 0.794)" ></div> Más importante (Carousel). </p>
+                        <p> <div style="height: 1em; width: 1em; background: rgba(58, 155, 211, 0.794)" ></div> Importante. </p> -->
                     </div>
                     <!-- <div @click="subirImportantes" class="btn btn-primary">Marcar como relevantes</div>         -->
                 </div>
@@ -27,7 +44,7 @@
 
                             <!-- <paginate name="result" :list="notas" :per="2" tag="tbody"> -->
                                 <!-- <tr  v-for="(item, index) in notas" :key="index" :ref="item.id"  :style="[item.relevante == 0 ? item.relevante == 2 ? {'background': 'rgba(91, 192, 222, 0.2)'} : {'background': '#d878f0da'}  : {'background': '#FFF'}]" > -->
-                                <tr  v-for="(item, index) in notas" :key="index" :ref="item.id"  :style="{'background': seleccionafondo(item.relevante)}" >
+                                <tr  v-for="(item, index) in notas" :key="index" :ref="item.id"  >
                                     <!-- <paginate name="result" :list="notas" :per="2" tag="tbody"> -->
                                     <td>{{index + 1}}</td>
                                     <td>{{item.titulo}}</td>
@@ -45,10 +62,9 @@
                                             <span class="btn-label"><i class="fa fa-pencil-square-o"></i></span></button>
                                         <button type="button" @click="eliminar(item,index)" class="btn btn-labeled btn-danger" style="margin-left: 2%;">
                                             <span class="btn-label"><i class="fa fa-remove"></i></span></button>
-                                        <button type="button" @click="agregarImportantes(item)" class="btn btn-labeled btn-primary" style="margin-left: 2%;">
-                                        <span class="btn-label"><i class="fa fa-star"></i></span></button>
-                                        <button type="button" @click="agregaSuperImportante(item)" class="btn btn-labeled btn-warning" style="margin-left: 2%;">
-                                        <span class="btn-label"><i class="fa fa-star"></i></span></button>
+                                        <div @click="agregaSuperImportante(item)"  class="btn btn-primary mx-1">Agregar a Carousel.</div>
+                                        <div @click="agregarImportantes(item)"  class="btn btn-warning mx-1">Agregar a Relevantes.</div>
+                                       
                                     </td>
                                 </tr>
                             <!-- </paginate> -->
@@ -217,6 +233,9 @@
 </template>
 
 <script>
+import eventBus from '../eventBus'
+import Carousel from './CarouselComponent.vue'
+import Relevantes from './Relevantes'
 import Editor from '@tinymce/tinymce-vue'
 import Vue from 'vue';
 import VueSweetalert2 from 'vue-sweetalert2';
@@ -228,6 +247,10 @@ Vue.use(VueLoading, {
 });
 
 export default {
+    components: {
+        Relevantes,
+        Carousel
+    },
     data() {
         return {
             modoEditar: false,
@@ -245,8 +268,6 @@ export default {
                 imgdesmostrativa: '',
                 id: ''
             },
-            importantes: [],
-            muyimportantes: [],
             pagination: {
                 total: 0,
                 current_page: 0,
@@ -254,22 +275,18 @@ export default {
                 last_page: 0,
                 from: 0,
                 to: 0
-            }
+            },
+            total_carousel: null,
+            total_relevantes: null
         }
     },
+
     created() {
          this.$loading(true);
         axios.post('/recentdata').then(resp => {
             this.notas = resp.data.notas.data;
             this.pagination = resp.data.pagination;
-            this.notas.forEach(element => {
-                if (element.relevante == 1) {
-                    this.importantes.push(element.id)
-                }else if(element.relevante == 2){
-                    this.muyimportantes.push(element.id)
-                }
-            });
-             this.$loading(false);
+            this.$loading(false);
         })
     },
 
@@ -277,6 +294,7 @@ export default {
         isActived: function() {
             return this.pagination.current_page;
         },
+
         pagesNumber: function() {
             if (!this.pagination.to) {
                 return [];
@@ -305,6 +323,17 @@ export default {
     mounted() {},
     methods: {
 
+        setTotalRelevantes(total){
+            this.total_relevantes = total
+            alert(this.total_relevantes)
+        },
+
+        setTotalCarousel(total){
+            this.total_carousel = total
+            alert(this.total_carousel)
+
+        },
+
         getNotas(page) {
             axios({
                 method: "post",
@@ -313,20 +342,15 @@ export default {
                     page: page
                 }
             })
-                .then(resp => {
-                    // this.newsFlag = true;
-                    this.notas = resp.data.notas.data;
-                    this.pagination = resp.data.pagination;
-                    this.notas.forEach(element => {
-                        if (element.relevante == 1) {
-                            this.importantes.push(element.id)
-                        }else if(element.relevante == 2){
-                            this.muyimportantes.push(element.id)
-                        }
-                    });
-                    this.$loading(false);
-                })
-                .catch(Error => console.log(Error));
+            .then(resp =>{
+                this.notas = resp.data.notas.data;
+                this.pagination = resp.data.pagination;
+                this.$loading(false);
+            })
+            .catch(Error =>{
+                if(Error) alert("Ocurrió un error, por favor, recarga la página.")
+            })
+                
         },
 
         changePage(page) {
@@ -396,14 +420,6 @@ export default {
             }
         },
 
-        iluminaImportantes(item){
-            if(item.relevante == 1){
-                 this.$refs[item.id][0].style.background = "rgba(246, 153, 63, 0.4)"
-            }else{
-                return
-            }
-        },
-
         seleccionafondo(fondo){
 
             if(fondo == 0 || fondo == null || fondo == "NULL"){
@@ -418,104 +434,68 @@ export default {
         },
 
 
-        agregarImportantes(item){
-
-            if(this.importantes.indexOf(item.id) != -1){
-                this.$swal({
-                    title: '¿Remover esta publicacion de relevante?',
-                    text: "Siempre puedes cambiar las publicaciones.",
-                    type: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Aceptar'
-                    }).then((result) => {
-                    if (result.value) {
-                        this.importantes.slice(this.importantes.indexOf(item.id), 1)
-                        this.$refs[item.id][0].style.background = "#FFF"
-                        axios({
-                            method: "post",
-                            url: "/removerImportante",
-                            data: {
-                                id: item.id
-                            }
-                        })
-                    }
+        agregarImportantes(id){
+            this.$swal({
+                title: '¿Agregar esta publicacion de relevante?',
+                text: "Siempre puedes cambiar la importancia de las publicaciones.",
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Aceptar'
                 })
-            }else{
-                  this.$swal({
-                    title: '¿Colocar esta publicacione como relevante?',
-                    text: "Siempre puedes cambiar las publicaciones.",
-                    type: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Aceptar'
-                    }).then((result) => {
-                    if (result.value) {
-                        this.importantes.push(item.id);
-                        this.$refs[item.id][0].style.background = "rgba(246, 153, 63, 0.4)"
-                        axios({
-                            method: "post",
-                            url: "/colocarImportante",
-                            data: {
-                                id: item.id
-                            }
-                        })
-                    }
-                })
-            }
+                .then((result) => {
+                if (result.value) {
+                    alert(result.value)
+                       axios({
+                        method: "POST",
+                        url: "/colocarImportante",
+                        data: {
+                        id: item.id
+                        }
+                    })
+                    .then(() => {
+                      eventBus.$emit('RELOAD_RELEVANTES')
+                      alert("Relevante insertado.");
+                    })
+                }
+            })
+            .catch(Error => {
+                alert(Error);
+            });
+            
 
         },
-           agregaSuperImportante(item){
-
-            if(this.muyimportantes.indexOf(item.id) != -1){
-                this.$swal({
-                    title: '¿Remover esta publicacion muy relevante?',
-                    text: "Siempre puedes cambiar las publicaciones.",
-                    type: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Aceptar'
-                    }).then((result) => {
-                    if (result.value) {
-                        this.muyimportantes.slice(this.muyimportantes.indexOf(item.id), 1)
-                        this.$refs[item.id][0].style.background = "#FFF"
-                        axios({
-                            method: "post",
-                            url: "/removerImportante",
-                            data: {
-                                id: item.id
-                            }
-                        })
+        
+        agregaSuperImportante(item){
+            this.$swal({
+            title: '¿Colocar esta publicación al carousel?',
+            text: "Siempre puedes cambiar los elementos del carousel.",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Aceptar'
+            })
+            .then((result) => {
+                if (result.value) {
+                     axios({
+                    method: "POST",
+                    url: "/colocarSuperImportante",
+                    data: {
+                      id: item.id
                     }
-                })
-            }else{
-                  this.$swal({
-                    title: '¿Colocar esta publicacione como muy relevante?',
-                    text: "Siempre puedes cambiar las publicaciones.",
-                    type: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Aceptar'
-                    }).then((result) => {
-                    if (result.value) {
-                        this.muyimportantes.push(item.id);
-                        this.$refs[item.id][0].style.background = "rgba(188, 211, 58, 0.794)"
-                        axios({
-                            method: "post",
-                            url: "/colocarSuperImportante",
-                            data: {
-                                id: item.id
-                            }
-                        })
-                    }
-                })
-            }
-
-        }
+                  })
+                    .then(() => {
+                      eventBus.$emit('RELOAD_CAROUSEL')
+                      alert("Item de carousel insertado.");
+                    })
+                }
+            })
+            .catch(Error => {
+                alert(Error);
+            });
+      },
     },
     components: {
         'editor': Editor,

@@ -66,8 +66,6 @@ Route::post('/recentdata', 'publicacionController@recentdata');
 // Route::post('/allnews', 'publicacionController@allnews');
 
 
-Route::post('/relevant', 'publicacionController@relevant');
-Route::post('/getSuperRelevantes', 'publicacionController@masrelevante');
 Route::post('/recent', 'publicacionController@recent');
 Route::post('/getNewsHome', 'publicacionController@getNewsHome');
 Route::post('/updateNews', 'NoticiasController@update');
@@ -79,9 +77,7 @@ Route::post('/getsearch', 'publicacionController@getsearch');
 Route::post('/allrecent', 'publicacionController@allrecent');
 Route::post('/getpdf', 'publicacionController@getpdf');
 Route::post('/gettheme', 'publicacionController@getheme');
-Route::post('/colocarImportante', 'publicacionController@colocarImportante');
-Route::post('/removerImportante', 'publicacionController@removerImportante');
-Route::post('/colocarSuperImportante', 'publicacionController@colocarSuperImportante');
+
 
 // Acciones
 Route::post('/actionRegister', 'ActionsController@store');
@@ -121,8 +117,14 @@ Route::resource('/document', 'DocumentController')->middleware('auth');
 Route::post('/testauth', 'publicacionController@esAdmin');
 
 
-
-
+// Estos son los metodos que traen los relevantes y carousel
+Route::post('/relevant', 'publicacionController@relevant');
+Route::post('/getSuperRelevantes', 'publicacionController@masrelevante');
+// Estos manejan las inserciones y delete de carousel y relevante
+Route::post('/colocarImportante', 'publicacionController@colocarImportante');
+Route::post('/removerImportante', 'publicacionController@removerImportante');
+// Funciona tanto para relevante como para Carousel, usando solo el id. 
+Route::post('/colocarSuperImportante', 'publicacionController@colocarSuperImportante');
 
 
 

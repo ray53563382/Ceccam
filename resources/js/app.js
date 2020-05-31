@@ -22,7 +22,7 @@ require("./bootstrap");
 import Vue from "vue";
 import App from "./components/App.vue";
 import router from "./router";
-import firebase from 'firebase';
+import firebase from "firebase";
 
 firebase.initializeApp({
     apiKey: "AIzaSyB4C5ZVV7bwT700U4x3zMso63c5RCkV5QU",
@@ -143,6 +143,13 @@ Vue.component(
 Vue.component(
     "noticiasportema",
     require("./components/user/noticiasportema.vue").default
+);
+
+Vue.component("Relevantes", require("./components/adm/Relevantes.vue").default);
+
+Vue.component(
+    "Carousel",
+    require("./components/adm/CarouselComponent.vue").default
 );
 
 new Vue({
